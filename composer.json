@@ -1,0 +1,51 @@
+{
+  "name": "crcms/microservice-dispatching",
+  "description": "Microservice dispatching.",
+  "keywords": [
+    "microservice",
+    "dispatching",
+    "events",
+    "crcms",
+    "laravel"
+  ],
+  "homepage": "http://blog.crcms.cn",
+  "support": {
+    "issues": "https://github.com/crcms/microservice-dispatching/issues",
+    "source": "https://github.com/crcms/microservice-dispatching"
+  },
+  "authors": [
+    {
+      "name": "simon",
+      "email": "simon@crcms.cn"
+    }
+  ],
+  "license": "MIT",
+  "type": "library",
+  "require": {
+    "php": "^7.2.4",
+    "crcms/foundation": "dev-master",
+    "illuminate/container": "5.7.*",
+    "illuminate/pipeline": "5.7.*",
+    "illuminate/events": "5.7.*"
+  },
+  "require-dev": {
+    "mockery/mockery": "^1.2",
+    "phpunit/phpunit": "^7.4",
+    "symfony/var-dumper": "^4.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "CrCms\\Microservice\\Dispatching\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "CrCms\\Microservice\\Dispatching\\Tests\\": "tests/"
+    }
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
+}
