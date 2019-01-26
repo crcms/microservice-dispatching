@@ -275,7 +275,7 @@ class Dispatcher
      */
     protected function parseAction($action)
     {
-        if (is_string($action)) {
+        if (is_string($action) || $action instanceof \Closure) {
             $action = ['uses' => $action];
         } elseif (!is_array($action)) {
             $action = [$action];
