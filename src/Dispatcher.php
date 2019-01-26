@@ -37,7 +37,21 @@ class Dispatcher
      */
     protected $callers = [];
 
+    /**
+     * The default is null,
+     * which can be an array or a string, but is automatically reset to null after each call.
+     *
+     * @var string|null|array
+     */
     protected $middleware;
+
+    /**
+     * The default is null
+     * Automatically reset to null after each call
+     *
+     * @var string|null
+     */
+    protected $namespace;
 
     /**
      * @param Container $app
@@ -48,16 +62,72 @@ class Dispatcher
     }
 
     /**
+     * Register dispatcher
+     *
+     * @param string $name
+     * @param $action
+     * @return void
+     */
+    public function register(string $name, $action, $options = []): void
+    {
+        if (is_string($action) && strpos($action, '@') === false) {
+            $methods = ReflectionControllerMethod::getMethods($action);
+            if (isset($options['only'])) {
+                $methods = array_intersect($methods, $options['only']);
+            } elseif (isset($options['except'])) {
+                $methods = array_diff($methods, $options['except']);
+            }
+            foreach ($methods as $method) {
+                $this->single("{$name}.{$method}", "{$action}@{$method}");
+            }
+
+            return;
+        }
+
+        $this->single($name, $action);
+    }
+
+    /**
+     * Register single dispatcher
+     *
+     * @param string $name
+     * @param $action
+     * @return void
+     */
+    public function single(string $name, $action): void
+    {
+        $action = $this->parseAction($action);
+
+        $attributes = null;
+
+        if ($this->hasGroupStack()) {
+            $attributes = $this->mergeWithLastGroup([]);
+        }
+
+        if (isset($attributes) && is_array($attributes)) {
+            $action = $this->mergeGroupAttributes($action, $attributes);
+        }
+
+        $this->callers[$name] = $action;
+    }
+
+    /**
      * Register a set of routes with a set of shared attributes.
      *
-     * @param  array  $attributes
-     * @param  \Closure  $callback
+     * @param  array $attributes
+     * @param  \Closure $callback
      * @return void
      */
     public function group(array $attributes, \Closure $callback)
     {
-        if (isset($attributes['middleware']) && is_string($attributes['middleware'])) {
-            $attributes['middleware'] = explode('|', $attributes['middleware']);
+        $middleware = $this->mergeMiddleware($attributes['middleware'] ?? null);
+        if ($middleware) {
+            $attributes['middleware'] = $middleware;
+        }
+
+        $namespace = $this->mergeNamespace($attributes['namespace'] ?? null);
+        if ($namespace) {
+            $attributes['namespace'] = $namespace;
         }
 
         $this->updateGroupStack($attributes);
@@ -67,30 +137,33 @@ class Dispatcher
         array_pop($this->groupStack);
     }
 
-    public function namespace()
+    /**
+     * Specify the full name space
+     * if there is $attributes['namespace'], it will default to the suffix space
+     *
+     * @param string $namespace
+     * @return Dispatcher
+     */
+    public function namespace(string $namespace): self
     {
+        $this->namespace = $namespace;
 
+        return $this;
     }
 
-    public function middleware($middleware): self
+    /**
+     * Specify middleware with a lower priority than $attributes['middleware']
+     *
+     * @param string|array $middleware
+     * @return $this
+     */
+    public function middleware($middleware)
     {
-        if (is_string($middleware)) {
-            $middleware = explode('|', $middleware);
+        $this->middleware = func_num_args() > 1 ? func_get_args() : $middleware;
+
+        if (is_string($this->middleware)) {
+            $this->middleware = explode('|', $this->middleware);
         }
-
-        $this->middleware = $middleware;
-
-//        $this->middleware = $middleware;
-//        $attribute = end($this->groupStack);
-//        $attribute['middleware'] = $middleware;
-//        $this->updateGroupStack($attribute);
-//
-//        $last = end($this->groupStack);
-//        dump($last);
-//
-//        if (empty($this->groupStack)) {
-//
-//        }
 
         return $this;
     }
@@ -98,12 +171,12 @@ class Dispatcher
     /**
      * Update the group stack with the given attributes.
      *
-     * @param  array  $attributes
+     * @param  array $attributes
      * @return void
      */
     protected function updateGroupStack(array $attributes)
     {
-        if (! empty($this->groupStack)) {
+        if (!empty($this->groupStack)) {
             $attributes = $this->mergeWithLastGroup($attributes);
         }
 
@@ -113,29 +186,14 @@ class Dispatcher
     /**
      * Merge the given group attributes.
      *
-     * @param  array  $new
-     * @param  array  $old
+     * @param  array $new
+     * @param  array $old
      * @return array
      */
     public function mergeGroup($new, $old)
     {
         $new['namespace'] = static::formatUsesPrefix($new, $old);
 
-//        $new['prefix'] = static::formatGroupPrefix($new, $old);
-
-//        if (isset($new['domain'])) {
-//            unset($old['domain']);
-//        }
-
-//        if (isset($old['as'])) {
-//            $new['as'] = $old['as'].(isset($new['as']) ? '.'.$new['as'] : '');
-//        }
-//
-//        if (isset($old['suffix']) && ! isset($new['suffix'])) {
-//            $new['suffix'] = $old['suffix'];
-//        }
-
-//        return array_merge_recursive(Arr::except($old, ['namespace', 'prefix', 'as', 'suffix']), $new);
         return array_merge_recursive(Arr::except($old, ['namespace']), $new);
     }
 
@@ -151,10 +209,50 @@ class Dispatcher
     }
 
     /**
+     * Merge and $attributes['middleware'],
+     * the priority will be lower than $attributes['middleware']
+     *
+     * @param $middleware
+     * @return array
+     */
+    protected function mergeMiddleware($middleware): array
+    {
+        if (is_string($middleware) && !is_null($middleware)) {
+            $middleware = explode('|', $middleware);
+        }
+
+        $middleware = array_merge((array)$this->middleware, (array)$middleware);
+
+        $this->middleware = null;
+
+        return $middleware;
+    }
+
+    /**
+     * Merge the namespace attribute in the $attributes array and the namespace attribute in the current object,
+     * and clear the current object namespace
+     *
+     * @param string|null $namespace
+     * @return string
+     */
+    protected function mergeNamespace(?string $namespace = null): string
+    {
+        if ($this->namespace && strpos($this->namespace, '\\') !== 0) {
+            if ($namespace) {
+                $namespace = rtrim($this->namespace, '\\').'\\'.ltrim($namespace, '\\');
+            }
+        }
+
+        $this->namespace = null;
+
+        return strval($namespace);
+    }
+
+    /**
      * Format the uses prefix for the new group attributes.
      *
-     * @param  array  $new
-     * @param  array  $old
+     * @param  array $new
+     * @param  array $old
      * @return string|null
      */
     protected static function formatUsesPrefix($new, $old)
@@ -169,95 +267,24 @@ class Dispatcher
     }
 
     /**
-     * Format the prefix for the new group attributes.
-     *
-     * @param  array  $new
-     * @param  array  $old
-     * @return string|null
-     */
-//    protected static function formatGroupPrefix($new, $old)
-//    {
-//        $oldPrefix = $old['prefix'] ?? null;
-//
-//        if (isset($new['prefix'])) {
-//            return trim($oldPrefix, '/').'/'.trim($new['prefix'], '/');
-//        }
-//
-//        return $oldPrefix;
-//    }
-
-    /**
-     * Add a route to the collection.
-     *
-     * @param  array|string  $method
-     * @param  string  $uri
-     * @param  mixed  $action
-     * @return void
-     */
-    public function register(string $name, string $action)
-    {
-        $action = $this->parseAction($action);
-
-        $attributes = null;
-
-        if ($this->hasGroupStack()) {
-            $attributes = $this->mergeWithLastGroup([]);
-        }
-
-        if (isset($attributes) && is_array($attributes)) {
-//            if (isset($attributes['prefix'])) {
-//                $uri = trim($attributes['prefix'], '/').'/'.trim($uri, '/');
-//            }
-//
-//            if (isset($attributes['suffix'])) {
-//                $uri = trim($uri, '/').rtrim($attributes['suffix'], '/');
-//            }
-
-            $action = $this->mergeGroupAttributes($action, $attributes);
-        }
-//
-//        $uri = '/'.trim($uri, '/');
-//
-//        if (isset($action['as'])) {
-//            $this->namedRoutes[$action['as']] = $uri;
-//        }
-
-//        if (is_array($method)) {
-//            foreach ($method as $verb) {
-//                $this->routes[$verb.$uri] = ['method' => $verb, 'uri' => $uri, 'action' => $action];
-//            }
-//        } else {
-//            $this->routes[$method.$uri] = ['method' => $method, 'uri' => $uri, 'action' => $action];
-//        }
-
-        $this->callers[$name] = $action;
-    }
-
-    /**
      * Parse the action into an array format.
      *
-     * @param  mixed  $action
+     * @param  mixed $action
      * @return array
      */
     protected function parseAction($action)
     {
         if (is_string($action)) {
-            return ['uses' => $action];
-        } elseif (! is_array($action)) {
-            return [$action];
+            $action = ['uses' => $action];
+        } elseif (!is_array($action)) {
+            $action = [$action];
         }
 
-        if (isset($action['middleware']) && is_string($action['middleware'])) {
-            $action['middleware'] = explode('|', $action['middleware']);
+        $middleware = $this->mergeMiddleware($action['middleware'] ?? null);
+        if ($middleware) {
+            $action['middleware'] = $middleware;
         }
 
-        if (!empty($this->middleware) && !empty($action['middleware'])) {
-            $action['middleware'] = array_merge((array)$action['middleware'],(array)$this->middleware);
-
-        } elseif (!empty($this->middleware)) {
-            $action['middleware'] = $this->middleware;
-        }
-        $this->middleware = [];
         return $action;
     }
 
@@ -268,21 +295,20 @@ class Dispatcher
      */
     public function hasGroupStack()
     {
-        return ! empty($this->groupStack);
+        return !empty($this->groupStack);
     }
 
     /**
      * Merge the group attributes into the action.
      *
-     * @param  array  $action
-     * @param  array  $attributes The group attributes
+     * @param  array $action
+     * @param  array $attributes The group attributes
      * @return array
      */
     protected function mergeGroupAttributes(array $action, array $attributes)
     {
         $namespace = $attributes['namespace'] ?? null;
         $middleware = $attributes['middleware'] ?? null;
-//        $as = $attributes['as'] ?? null;
 
         return $this->mergeNamespaceGroup(
             $this->mergeMiddlewareGroup(
@@ -295,7 +321,7 @@ class Dispatcher
     /**
      * Merge the namespace group into the action.
      *
-     * @param  array  $action
+     * @param  array $action
      * @param  string $namespace
      * @return array
      */
@@ -324,8 +350,8 @@ class Dispatcher
     /**
      * Merge the middleware group into the action.
      *
-     * @param  array  $action
-     * @param  array  $middleware
+     * @param  array $action
+     * @param  array $middleware
      * @return array
      */
     protected function mergeMiddlewareGroup(array $action, $middleware = null)
@@ -337,14 +363,6 @@ class Dispatcher
                 $action['middleware'] = $middleware;
             }
         }
-
-        if (isset($action['middleware']) && !empty($this->middleware)) {
-            $action['middleware'] = array_merge($action['middleware'],$this->middleware);
-        } elseif (!empty($this->middleware)) {
-            $action['middleware'] = $this->middleware;
-        }
-
-        $this->middleware = [];
 
         return $action;
     }
@@ -358,16 +376,4 @@ class Dispatcher
     {
         return $this->callers;
     }
-
-    public function single()
-    {
-
-    }
-
-    public function multiple()
-    {
-
-    }
-
-
 }
