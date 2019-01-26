@@ -1,6 +1,6 @@
 <?php
 
-namespace CrCms\Microservice\Routing;
+namespace CrCms\Microservice\Dispatching;
 
 use Traversable;
 use JsonSerializable;

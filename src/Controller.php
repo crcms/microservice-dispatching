@@ -1,6 +1,6 @@
 <?php
 
-namespace CrCms\Microservice\Routing;
+namespace CrCms\Microservice\Dispatching;
 
 use BadMethodCallException;
 use InvalidArgumentException;
@@ -15,41 +15,6 @@ abstract class Controller
 {
     use InstanceConcern {
         InstanceConcern::__get as __instanceGet;
-    }
-
-    /**
-     * The middleware registered on the controller.
-     *
-     * @var array
-     */
-    protected $middleware = [];
-
-    /**
-     * Register middleware on the controller.
-     *
-     * @param array|string|\Closure $middleware
-     * @param array                 $options
-     *
-     * @return void
-     */
-    public function middleware($middleware, array $options = []): void
-    {
-        foreach ((array) $middleware as $m) {
-            $this->middleware[] = [
-                'middleware' => $m,
-                'options'    => $options,
-            ];
-        }
-    }
-
-    /**
-     * Get the middleware assigned to the controller.
-     *
-     * @return array
-     */
-    public function getMiddleware()
-    {
-        return $this->middleware;
     }
 
     /**

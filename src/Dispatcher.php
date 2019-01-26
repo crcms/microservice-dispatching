@@ -13,6 +13,7 @@ namespace CrCms\Microservice\Dispatching;
 
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Arr;
+use OutOfBoundsException;
 
 class Dispatcher
 {
@@ -375,5 +376,22 @@ class Dispatcher
     public function getCallers()
     {
         return $this->callers;
+    }
+
+    /**
+     * Find the specified matcher
+     *
+     * @param string $name
+     * @return array
+     *
+     * @throws OutOfBoundsException
+     */
+    public function getCaller(string $name): array
+    {
+        if (!isset($this->callers[$name])) {
+            throw new OutOfBoundsException("The dispatching not found match[{$name}]");
+        }
+
+        return $this->callers[$name];
     }
 }
