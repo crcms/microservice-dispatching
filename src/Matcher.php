@@ -48,7 +48,7 @@ class Matcher
 
         return (new Pipeline($this->app))
             ->send($data)
-            ->through($this->caller['middleware'])
+            ->through($this->getCallerMiddleware())
             ->then(function ($data) {
                 return $this->app->call($this->caller['uses']);
             });
