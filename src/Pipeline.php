@@ -3,10 +3,10 @@
 namespace CrCms\Microservice\Dispatching;
 
 use Closure;
+use CrCms\Foundation\Transporters\Contracts\DataProviderContract;
 use Exception;
 use Throwable;
 use Illuminate\Pipeline\Pipeline as BasePipeline;
-use CrCms\Microservice\Server\Contracts\RequestContract;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
 use Illuminate\Contracts\Debug\ExceptionHandler as ExceptionHandlerContract;
 
@@ -74,7 +74,7 @@ class Pipeline extends BasePipeline
     protected function handleException($passable, Exception $e)
     {
         if (! $this->container->bound(ExceptionHandlerContract::class) ||
-            ! $passable instanceof RequestContract) {
+            ! $passable instanceof DataProviderContract) {
             throw $e;
         }
 
