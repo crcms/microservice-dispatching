@@ -109,7 +109,7 @@ class Dispatcher
             $action = $this->mergeGroupAttributes($action, $attributes);
         }
 
-        $this->callers[$name] = $action;
+        $this->callers[$name] = $this->createMatcher($action);
     }
 
     /**
@@ -167,6 +167,11 @@ class Dispatcher
         }
 
         return $this;
+    }
+
+    protected function createMatcher(array $action): Matcher
+    {
+        return new Matcher($action);
     }
 
     /**
