@@ -169,9 +169,15 @@ class Dispatcher
         return $this;
     }
 
+    /**
+     * createMatcher
+     *
+     * @param array $action
+     * @return Matcher
+     */
     protected function createMatcher(array $action): Matcher
     {
-        return new Matcher($action);
+        return new Matcher($this,$action);
     }
 
     /**
