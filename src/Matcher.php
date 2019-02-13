@@ -55,9 +55,9 @@ class Matcher
     /**
      * getCallerUses
      *
-     * @return string
+     * @return string|\Closure
      */
-    public function getCallerUses(): string
+    public function getCallerUses()
     {
         return $this->caller['uses'];
     }
