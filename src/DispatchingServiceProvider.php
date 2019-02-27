@@ -6,7 +6,6 @@ use Illuminate\Support\ServiceProvider;
 
 class DispatchingServiceProvider extends ServiceProvider
 {
-
     /**
      * boot
      *
@@ -27,12 +26,20 @@ class DispatchingServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->registerAlias();
+
         $this->app->singleton('caller', function ($app) {
             return new Dispatcher($app);
         });
+    }
 
-        $this->app->singleton('caller.match', function ($app) {
-            return new Matcher($app, $app['caller']);
-        });
+    /**
+     * registerAlias
+     *
+     * @return void
+     */
+    protected function registerAlias(): void
+    {
+        $this->app->alias('caller', Dispatcher::class);
     }
 }

@@ -169,9 +169,15 @@ class Dispatcher
         return $this;
     }
 
+    /**
+     * createMatcher
+     *
+     * @param array $action
+     * @return Matcher
+     */
     protected function createMatcher(array $action): Matcher
     {
-        return new Matcher($action);
+        return new Matcher($this,$action);
     }
 
     /**
@@ -387,11 +393,11 @@ class Dispatcher
      * Find the specified matcher
      *
      * @param string $name
-     * @return array
+     * @return Matcher
      *
      * @throws OutOfBoundsException
      */
-    public function getCaller(string $name): array
+    public function getCaller(string $name): Matcher
     {
         if (!isset($this->callers[$name])) {
             throw new OutOfBoundsException("The dispatching not found match[{$name}]");
