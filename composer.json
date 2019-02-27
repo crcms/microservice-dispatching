@@ -25,9 +25,9 @@
     "php": "^7.2.4",
     "crcms/foundation": "dev-master",
     "symfony/debug": "^4.1",
-    "illuminate/container": "5.7.*",
-    "illuminate/pipeline": "5.7.*",
-    "illuminate/events": "5.7.*"
+    "illuminate/container": "5.7.* | 5.8.*",
+    "illuminate/pipeline": "5.7.* | 5.8.*",
+    "illuminate/events": "5.7.* | 5.8.*"
   },
   "require-dev": {
     "mockery/mockery": "^1.2",
