@@ -71,6 +71,7 @@ class Dispatcher
      */
     public function register(string $name, $action, $options = []): void
     {
+        //@todo 暂时只支持直接的命名空间指定的action，不支持middleware和namespace单独定义
         if (is_string($action) && strpos($action, '@') === false) {
             $methods = ReflectionControllerMethod::getMethods($action);
             if (isset($options['only'])) {

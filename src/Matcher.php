@@ -2,16 +2,8 @@
 
 namespace CrCms\Microservice\Dispatching;
 
-use CrCms\Foundation\Transporters\Contracts\DataProviderContract;
-use Illuminate\Contracts\Container\Container;
-
 class Matcher
 {
-    /**
-     * @var Container
-     */
-    protected $app;
-
     /**
      * @var Dispatcher
      */
@@ -30,18 +22,6 @@ class Matcher
     {
         $this->dispatcher = $dispatcher;
         $this->caller = $caller;
-    }
-
-    /**
-     * setContainer
-     *
-     * @param Container $container
-     * @return Matcher
-     */
-    public function setContainer(Container $container): self
-    {
-        $this->app = $container;
-        return $this;
     }
 
     /**

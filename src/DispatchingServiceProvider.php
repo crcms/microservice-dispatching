@@ -13,10 +13,6 @@ class DispatchingServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $routePath = $this->app->basePath().'/routes/service.php';
-        if (file_exists($routePath)) {
-            require $routePath;
-        }
     }
 
     /**
