@@ -51,15 +51,15 @@ class DispatcherTest extends TestCase
         $callers = $this->dispatcher->getCallers();
 
         //a1
-        $this->assertEquals(['m1'], $callers['a1']['middleware']);
+        $this->assertEquals(['m1'], $callers['a1']->getCallerMiddleware());
         //a2
-        $this->assertEquals(['m2', 'm22'], $callers['a2']['middleware']);
+        $this->assertEquals(['m2', 'm22'], $callers['a2']->getCallerMiddleware());
         // a3
-        $this->assertEquals(['m3', 'm33', 'm333'], $callers['a3']['middleware']);
+        $this->assertEquals(['m3', 'm33', 'm333'], $callers['a3']->getCallerMiddleware());
         // a4
-        $this->assertEquals(['m3', 'm33', 'm333', 'm334', 'm3344', 'm33445', 'm334455'], $callers['a4']['middleware']);
+        $this->assertEquals(['m3', 'm33', 'm333', 'm334', 'm3344', 'm33445', 'm334455'], $callers['a4']->getCallerMiddleware());
         //a1
-        $this->assertEquals(['m5'], $callers['a5']['middleware']);
+        $this->assertEquals(['m5'], $callers['a5']->getCallerMiddleware());
     }
 
 
@@ -77,9 +77,9 @@ class DispatcherTest extends TestCase
 
         $callers = $this->dispatcher->getCallers();
 
-        $this->assertEquals('A\A1\A1@a1', $callers['a1']['uses']);
-        $this->assertEquals('A\A1\B\B1\A4@a4', $callers['a2']['uses']);
-        $this->assertEquals('A\A1\B\B1\C\C1\A5@a4', $callers['a3']['uses']);
+        $this->assertEquals('A\A1\A1@a1', $callers['a1']->getCallerUses());
+        $this->assertEquals('A\A1\B\B1\A4@a4', $callers['a2']->getCallerUses());
+        $this->assertEquals('A\A1\B\B1\C\C1\A5@a4', $callers['a3']->getCallerUses());
     }
 
 
@@ -91,11 +91,11 @@ class DispatcherTest extends TestCase
 
         $callers = $this->dispatcher->getCallers();
 
-        $this->assertEquals('A1@a1', $callers['abc']['uses']);
+        $this->assertEquals('A1@a1', $callers['abc']->getCallerUses());
 
         $methods = ReflectionControllerMethod::getMethods(TestingController::class);
         foreach ($methods as $method) {
-            $this->assertEquals(TestingController::class.'@'.$method, $callers['testing.'.$method]['uses']);
+            $this->assertEquals(TestingController::class.'@'.$method, $callers['testing.'.$method]->getCallerUses());
         }
     }
 }
