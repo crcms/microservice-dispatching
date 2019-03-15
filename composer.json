@@ -23,7 +23,7 @@
   "type": "library",
   "require": {
     "php": "^7.2.4",
-    "crcms/foundation": "dev-master",
+    "crcms/foundation": "^0.0.1",
     "symfony/debug": "^4.1",
     "illuminate/container": "^5.7",
     "illuminate/pipeline": "^5.7",
