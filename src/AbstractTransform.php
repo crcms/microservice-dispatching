@@ -18,10 +18,18 @@ abstract class AbstractTransform extends TransformerAbstract
 {
     use FieldConcern;
 
-//    public function transform($item)
-//    {
-//        if (method_exists($this,'itemTransform')) {
-//            $result = $this->toArray($item);
-//        }
-//    }
+    /**
+     * Base transform
+     *
+     * @param $item
+     * @return array
+     */
+    public function transform($item): array
+    {
+        if (method_exists($this, 'toArray')) {
+            return $this->filterFields($this->toArray($item));
+        }
+
+        return (array)$item;
+    }
 }
