@@ -14,7 +14,7 @@ namespace CrCms\Microservice\Dispatching;
 use CrCms\Foundation\Resources\Concerns\FieldConcern;
 use League\Fractal\TransformerAbstract;
 
-abstract class AbstractTransform extends TransformerAbstract
+abstract class AbstractTransformer extends TransformerAbstract
 {
     use FieldConcern;
 
