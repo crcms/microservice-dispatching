@@ -135,6 +135,26 @@ class TransformerFactory
     }
 
     /**
+     * null
+     *
+     * @return array
+     */
+    public function null(): array
+    {
+        return [];
+    }
+
+    /**
+     * Compatible with the paging program, the next version is deleted
+     *
+     * @return array
+     */
+    public function noContent(): array
+    {
+        return $this->null();
+    }
+
+    /**
      * @param array|Collection|\JsonSerializable|\Traversable $data
      * @param string $key
      *
