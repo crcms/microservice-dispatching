@@ -27,7 +27,7 @@
     "crcms/foundation": "^0.0.1",
     "illuminate/container": "^5.7",
     "illuminate/events": "^5.7",
-    "illuminate/pagination": "^5.8",
+    "illuminate/pagination": "^5.7",
     "illuminate/pipeline": "^5.7",
     "league/fractal": "^0.17.0",
     "symfony/debug": "^4.1"
