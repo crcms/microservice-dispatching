@@ -12,6 +12,7 @@
 namespace CrCms\Microservice\Dispatching\Tests;
 
 use CrCms\Microservice\Dispatching\TransformerFactory;
+use Illuminate\Pagination\LengthAwarePaginator;
 use PHPUnit\Framework\TestCase;
 
 class TransformerFactoryTest extends TestCase
@@ -32,5 +33,22 @@ class TransformerFactoryTest extends TestCase
         $this->assertEquals(true,is_array($result));
         $this->assertArrayHasKey('data',$result);
         $this->assertEquals(1,count($result));
+    }
+
+    public function testPaginate()
+    {
+        $factory = new TransformerFactory();
+
+        $paginate = new LengthAwarePaginator(
+            [['foo'=>'foo','bar'=>'bar'],['foo'=>'foo','bar'=>'bar']],
+            1,
+            1
+        );
+
+        $result = $factory->paginate($paginate,TestTransformer::class);
+        $this->assertEquals(true,is_array($result));
+        $this->assertArrayHasKey('data',$result);
+        $this->assertArrayHasKey('meta',$result);
+        $this->assertEquals(2,count($result));
     }
 }

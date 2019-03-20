@@ -3,6 +3,8 @@
 namespace CrCms\Microservice\Dispatching;
 
 use CrCms\Foundation\Helpers\InstanceConcern;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use League\Fractal\Pagination\IlluminatePaginatorAdapter;
 use Traversable;
 use JsonSerializable;
 use InvalidArgumentException;
@@ -84,9 +86,32 @@ class TransformerFactory
     }
 
     /**
+     * Paginator
      *
+     * @param LengthAwarePaginator $paginator
+     * @param string|AbstractTransformer $transformer
+     * @param array $fields
+     * @param array $includes
+     * @return array
      *
-     * @param $paginator
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
+    public function paginate(LengthAwarePaginator $paginator, $transformer, array $fields = [], array $includes = []): array
+    {
+        $transformer = $this->parseTransformer($transformer, $fields);
+
+        $resource = (new FractalCollection($paginator->items(), $transformer));
+        $resource->setPaginator(new IlluminatePaginatorAdapter($paginator));
+
+        $this->parseIncludes($includes);
+
+        return $this->fractal->createData($resource)->toArray();
+    }
+
+    /**
+     * Compatible with the paging program, the next version is deleted
+     *
+     * @param LengthAwarePaginator $paginator
      * @param $transformer
      * @param array $fields
      * @param array $includes
@@ -94,25 +119,9 @@ class TransformerFactory
      *
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    public function paginator($paginator, $transformer, array $fields = [], array $includes = []): array
+    public function paginator(LengthAwarePaginator $paginator, $transformer, array $fields = [], array $includes = []): array
     {
-//        $paginator = Book::paginate();
-//        $books = $paginator->getCollection();
-//
-//        $resource = new Collection($books, new BookTransformer());
-//        $resource->setPaginator(new IlluminatePaginatorAdapter($paginator));
-
-//        $transformer = $this->parseTransformer($transformer, $fields);
-//
-//        $this->parseIncludes($includes);
-//
-//        $paginator = new Collection($paginator, $transformer);
-//        $paginator->setPaginator(new IlluminatePaginatorAdapter($paginator));
-//
-//        return $this->fractal->createData()->toArray();
-//
-//        return $this->collection($paginator, $transformer, $fields, $includes);
-        return [];
+        return $this->paginate($paginator, $transformer, $fields, $includes);
     }
 
     /**
