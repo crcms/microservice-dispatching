@@ -12,16 +12,20 @@
 namespace CrCms\Microservice\Dispatching\Tests;
 
 use CrCms\Microservice\Dispatching\AbstractTransformer;
+use Illuminate\Support\Collection;
 
 class TestTransformer extends AbstractTransformer
 {
 
-    public function toArray(array $item)
+    public function toArray($item): array
     {
-        return [
+        if ($item instanceof Collection) {
+            $item = $item->toArray();
+        }
+        return array_merge($item,[
             'z' => 1,
             'x' => 2,
-        ];
+        ]);
     }
 
 }
