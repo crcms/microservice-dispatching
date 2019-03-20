@@ -21,11 +21,11 @@ abstract class Controller
     }
 
     /**
-     * @return ResponseFactory
+     * @return TransformerFactory
      */
-    protected function response(): ResponseFactory
+    protected function transform(): TransformerFactory
     {
-        return $this->app->make(ResponseFactory::class);
+        return $this->app->make(TransformerFactory::class);
     }
 
     /**
@@ -35,8 +35,8 @@ abstract class Controller
      */
     public function __get(string $name)
     {
-        if ($name === 'response') {
-            return $this->response();
+        if ($name === 'transform') {
+            return $this->transform();
         }
 
         if ((bool)$instance = $this->__instanceGet($name)) {
