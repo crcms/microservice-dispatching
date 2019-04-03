@@ -24,7 +24,7 @@
   "require": {
     "php": "^7.2.4",
     "ext-json": "*",
-    "crcms/foundation": "^0.0.1",
+    "crcms/foundation": "^0.0",
     "illuminate/container": "^5.7",
     "illuminate/events": "^5.7",
     "illuminate/pagination": "^5.7",
